@@ -6,6 +6,7 @@ import { ToastContainer } from "react-toastify";
 
 function App() {
   const [walletAddress, setWalletAddress] = useState<string | null>("");
+  // const [walletAddress, setWalletAddress] = useState<boolean>(false);
 
   useEffect(() => {
     setWalletAddress(localStorage.getItem("walletAddress"));

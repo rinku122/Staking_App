@@ -12,15 +12,13 @@ const disableBtnStyle = {
 
 const Transact = ({
   getSomeStakingTokens,
-  loading,
   balancesAndStakes,
   handleTokens,
   getRewards,
 }: {
   getSomeStakingTokens: () => void;
   getRewards: () => void;
-  handleTokens: (amount: string, action: "unstake" | "stake") => void;
-  loading: boolean;
+  handleTokens: (amount: string, action: "unstake" | "stake") => Promise<void>;
   balancesAndStakes: {
     rewardTokenBal: string;
     stakingTokenBal: string;
@@ -51,7 +49,6 @@ const Transact = ({
 
   const allowed = (desiredAmount: string, maxAmount: string): boolean => {
     if (!desiredAmount) return true;
-
     return new BigNumber(desiredAmount)
       .multipliedBy(new BigNumber(10 ** DECIMALS))
       .isGreaterThan(new BigNumber(maxAmount));
@@ -70,8 +67,8 @@ const Transact = ({
       />
       <button
         style={allowed(stakeAmount, stakingTokenBal) ? disableBtnStyle : {}}
-        onClick={() => {
-          handleTokens(stakeAmount, "stake");
+        onClick={async () => {
+          await handleTokens(stakeAmount, "stake");
           setFormValue({
             ...formValues,
             stakeAmount: "",
@@ -96,8 +93,8 @@ const Transact = ({
           style={allowed(unStakeAmount, stake) ? disableBtnStyle : {}}
           disabled={allowed(unStakeAmount, stake)}
           className="styled-button"
-          onClick={() => {
-            handleTokens(unStakeAmount, "unstake");
+          onClick={async () => {
+            await handleTokens(unStakeAmount, "unstake");
             setFormValue({
               ...formValues,
               unStakeAmount: "",
@@ -107,8 +104,8 @@ const Transact = ({
           Unstake
         </button>
         <button
-          style={allowed("0", earned) ? disableBtnStyle : {}}
-          disabled={allowed("0", earned)}
+          style={Number(earned) > 0 ? {} : disableBtnStyle}
+          disabled={Number(earned) <= 0}
           className="styled-button"
           onClick={getRewards}
         >
@@ -119,7 +116,7 @@ const Transact = ({
           style={{ background: "#45a049" }}
           className="styled-button"
         >
-          {loading ? "Please Wait..." : "Get Some Token to Stake"}
+          Get Some Token to Stake
         </button>
       </div>
     </div>

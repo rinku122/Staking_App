@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useContract } from "../context/ContractContext";
 import Transact from "./Transact";
 import TransactionHistory from "./Transaction";
@@ -7,11 +7,13 @@ import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { DECIMALS, STAKING_REWARD_CONTRACT_REWARD_ADDRESS } from "../Constants";
 import BigNumber from "bignumber.js";
+import { Circles } from "react-loader-spinner";
 
 const Dashboard = ({ walletAddress }: { walletAddress: string }) => {
   const contracts = useContract();
   const { web3 }: any = useWeb3();
   const [loading, setloading] = useState(false);
+  const timerRef = useRef<any>(null);
 
   const { rewardTokenContract, stakingTokenContract, stakingRewardsContract } =
     contracts;
@@ -29,24 +31,26 @@ const Dashboard = ({ walletAddress }: { walletAddress: string }) => {
     )
       return;
     getBalancesAndStakes();
+    getEarnedRewards();
+    return () => clearInterval(timerRef.current);
   }, [contracts]);
 
   const getBalancesAndStakes = async () => {
     try {
-      const [_rewardTokenBal, _stakingTokenBal, _stake] = await Promise.all([
-        rewardTokenContract.methods.balanceOf(walletAddress).call(),
-        stakingTokenContract.methods.balanceOf(walletAddress).call(),
-        stakingRewardsContract.methods.balanceOf(walletAddress).call(),
-        stakingRewardsContract.methods.earned(walletAddress).call(),
-      ]);
-
-      console.log(_rewardTokenBal, _stakingTokenBal, _stake);
+      const [_rewardTokenBal, _stakingTokenBal, _stake, _earned] =
+        await Promise.all([
+          rewardTokenContract.methods.balanceOf(walletAddress).call(),
+          stakingTokenContract.methods.balanceOf(walletAddress).call(),
+          stakingRewardsContract.methods.balanceOf(walletAddress).call(),
+          stakingRewardsContract.methods.earned(walletAddress).call(),
+        ]);
 
       setbalancesAndStakes({
         ...balancesAndStakes,
         rewardTokenBal: _rewardTokenBal.toString(),
         stakingTokenBal: _stakingTokenBal.toString(),
         stake: _stake.toString(),
+        earned: _earned.toString(),
       });
     } catch (error) {
       console.log(error);
@@ -57,7 +61,8 @@ const Dashboard = ({ walletAddress }: { walletAddress: string }) => {
     try {
       setloading(true);
       const tokenAmount = "10000000000000000000000";
-      const gasPrice = await web3.eth.getGasPrice();
+      let gasPrice: any = await web3.eth.getGasPrice();
+      gasPrice = Math.trunc((Number(gasPrice) * 150) / 100).toString();
 
       const gas = await stakingTokenContract.methods
         .mint(walletAddress, tokenAmount)
@@ -75,6 +80,25 @@ const Dashboard = ({ walletAddress }: { walletAddress: string }) => {
       setloading(false);
       toast.dismiss();
       toast.success("Staking Tokens addedd to Wallet...");
+    } catch (error: any) {
+      console.log(error.message);
+      toast.error(error.message);
+      setloading(false);
+    }
+  };
+
+  const getEarnedRewards = async () => {
+    try {
+      timerRef.current = setInterval(async () => {
+        const _earned = await stakingRewardsContract.methods
+          .earned(walletAddress)
+          .call();
+
+        setbalancesAndStakes((_balancesAndStakes) => ({
+          ..._balancesAndStakes,
+          earned: _earned.toString(),
+        }));
+      }, 2000);
     } catch (error) {
       console.log(error);
     }
@@ -123,8 +147,10 @@ const Dashboard = ({ walletAddress }: { walletAddress: string }) => {
 
       setloading(false);
       toast.success(`Token ${action === "stake" ? "Staked" : "Unstaked"}...`);
-    } catch (error) {
+    } catch (error: any) {
       console.log(error);
+      toast.error(error.message);
+      setloading(false);
     }
   };
 
@@ -132,8 +158,8 @@ const Dashboard = ({ walletAddress }: { walletAddress: string }) => {
     try {
       toast.dismiss();
       setloading(true);
-      const gasPrice = await web3.eth.getGasPrice();
-
+      let gasPrice: any = await web3.eth.getGasPrice();
+      gasPrice = Math.trunc((Number(gasPrice) * 150) / 100).toString();
       const gas = await stakingRewardsContract.methods.getReward().estimateGas({
         from: walletAddress,
       });
@@ -146,7 +172,7 @@ const Dashboard = ({ walletAddress }: { walletAddress: string }) => {
 
       const [balance, earned] = await Promise.all([
         rewardTokenContract.methods.balanceOf(walletAddress).call(),
-        stakingTokenContract.methods.earned(walletAddress).call(),
+        stakingRewardsContract.methods.earned(walletAddress).call(),
       ]);
 
       setbalancesAndStakes({
@@ -157,8 +183,10 @@ const Dashboard = ({ walletAddress }: { walletAddress: string }) => {
 
       setloading(false);
       toast.success(`Rewards Redeemed Successfully...`);
-    } catch (error) {
+    } catch (error: any) {
       console.log(error);
+      toast.error(error.message);
+      setloading(false);
     }
   };
 
@@ -166,7 +194,8 @@ const Dashboard = ({ walletAddress }: { walletAddress: string }) => {
     try {
       const maxAllowance =
         "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff";
-      const gasPrice = await web3.eth.getGasPrice();
+      let gasPrice: any = await web3.eth.getGasPrice();
+      gasPrice = Math.trunc((Number(gasPrice) * 150) / 100).toString();
 
       const gas = await stakingTokenContract.methods
         .approve(STAKING_REWARD_CONTRACT_REWARD_ADDRESS, maxAllowance)
@@ -187,12 +216,23 @@ const Dashboard = ({ walletAddress }: { walletAddress: string }) => {
         margin: "30px",
       }}
     >
+      {loading && (
+        <div className="loader-overlay">
+          <Circles
+            height="80"
+            width="80"
+            color="white"
+            ariaLabel="loading"
+            wrapperStyle={{}}
+            wrapperClass="grid-wrapper"
+          />
+        </div>
+      )}
       <Transact
         balancesAndStakes={balancesAndStakes}
         getSomeStakingTokens={getSomeStakingTokens}
         handleTokens={handleTokens}
         getRewards={getRewards}
-        loading={loading}
       />
       <TransactionHistory
         walletAddress={walletAddress}
