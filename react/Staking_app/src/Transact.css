@@ -1,0 +1,58 @@
+/* Transact.css */
+
+.styled-input {
+  padding: 10px;
+  margin-bottom: 15px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 1rem;
+  box-sizing: border-box;
+}
+
+.styled-button {
+  padding: 10px;
+  background-color: #213547;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.styled-card {
+  padding: 10px;
+  background-color: #213547;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  font-size: 1rem;
+  margin: 20px auto;
+}
+
+.styled-input,
+.styled-button {
+  display: block;
+  width: 50%;
+  margin: 20px auto;
+}
+
+.styled-button:hover {
+  background-color: #45a049;
+}
+
+.transact-container {
+  width: 50%;
+  text-align: center;
+}
+
+.tx-table {
+  width: 50%;
+  text-align: right;
+  margin: 0 5rem;
+}
+
+.border {
+  border: 1px solid white;
+  padding: 8px;
+}
