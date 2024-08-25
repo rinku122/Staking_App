@@ -42,7 +42,7 @@ contract StakingRewards is ReentrancyGuard, IStakingRewards{
         stakingToken.transferFrom(msg.sender, address(this), _amount);
         stakers[msg.sender].amount += _amount;
         totalSupply += _amount;
-        emit Staked(msg.sender, _amount);
+        emit Staked(msg.sender, _amount, block.timestamp);
     }
 
     function unstake(uint256 _amount) external nonReentrant updateReward(msg.sender){
@@ -50,7 +50,7 @@ contract StakingRewards is ReentrancyGuard, IStakingRewards{
         stakers[msg.sender].amount -= _amount;
         totalSupply -= _amount;
         stakingToken.transfer(msg.sender, _amount);
-        emit Unstaked(msg.sender, _amount);
+        emit Unstaked(msg.sender, _amount, block.timestamp);
     }
 
     function rewardPerToken() public view returns (uint256) {
@@ -78,7 +78,7 @@ contract StakingRewards is ReentrancyGuard, IStakingRewards{
             stakers[msg.sender].accumlatedReward = 0;
             rewardsToken.transfer(msg.sender, reward);
         }
-        emit RewardPaid(msg.sender, reward);
+        emit RewardPaid(msg.sender, reward, block.timestamp);
     }
 
    

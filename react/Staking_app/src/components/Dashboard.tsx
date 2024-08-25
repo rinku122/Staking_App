@@ -9,11 +9,16 @@ import { DECIMALS, STAKING_REWARD_CONTRACT_REWARD_ADDRESS } from "../Constants";
 import BigNumber from "bignumber.js";
 import { Circles } from "react-loader-spinner";
 
+export interface Transaction {
+  transactionHash: string;
+  event: "Staked" | "Unstaked" | "RewardPaid";
+  returnValues: { amount: string; time: string };
+}
+
 const Dashboard = ({ walletAddress }: { walletAddress: string }) => {
   const contracts = useContract();
   const { web3 }: any = useWeb3();
   const [loading, setloading] = useState(false);
-  const [lastBlockNumber, setLastBlockNumber] = useState(0);
   const timerRef = useRef<any>(null);
 
   const { rewardTokenContract, stakingTokenContract, stakingRewardsContract } =
@@ -25,6 +30,8 @@ const Dashboard = ({ walletAddress }: { walletAddress: string }) => {
     earned: "0",
     rewardTokenBal: "0",
   });
+
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
 
   useEffect(() => {
     if (
@@ -41,9 +48,12 @@ const Dashboard = ({ walletAddress }: { walletAddress: string }) => {
   const getTransaction = async () => {
     try {
       const events = await stakingRewardsContract.getPastEvents("allEvents", {
-        fromBlock: "6563956",
+        filter: { user: walletAddress },
+        fromBlock: "0",
         toBlock: "latest",
       });
+
+      setTransactions(events);
 
       console.log(events);
     } catch (error) {
@@ -147,12 +157,13 @@ const Dashboard = ({ walletAddress }: { walletAddress: string }) => {
         amount
       ).estimateGas({ from: walletAddress });
 
-       await stakingRewardsContract.methods[method](amount).send({
+      await stakingRewardsContract.methods[method](amount).send({
         from: walletAddress,
         gasPrice,
         gas,
       });
 
+      await getTransaction();
 
       const [newBalance, stakingBalance] = await Promise.all([
         stakingRewardsContract.methods.balanceOf(walletAddress).call(),
@@ -189,6 +200,8 @@ const Dashboard = ({ walletAddress }: { walletAddress: string }) => {
         gasPrice,
         gas,
       });
+
+      await getTransaction();
 
       const [balance, earned] = await Promise.all([
         rewardTokenContract.methods.balanceOf(walletAddress).call(),
@@ -255,6 +268,7 @@ const Dashboard = ({ walletAddress }: { walletAddress: string }) => {
         getRewards={getRewards}
       />
       <TransactionHistory
+        transactions={transactions}
         walletAddress={walletAddress}
         balancesAndStakes={balancesAndStakes}
       />

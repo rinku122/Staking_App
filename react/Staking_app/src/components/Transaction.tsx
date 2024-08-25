@@ -1,11 +1,15 @@
 import BigNumber from "bignumber.js";
 import { DECIMALS } from "../Constants";
+import { Transaction } from "./Dashboard";
+import { Fragment } from "react/jsx-runtime";
 
 const TransactionHistory = ({
   walletAddress,
   balancesAndStakes,
+  transactions,
 }: {
   walletAddress: string;
+  transactions: Transaction[];
   balancesAndStakes: {
     rewardTokenBal: string;
     stakingTokenBal: string;
@@ -13,27 +17,6 @@ const TransactionHistory = ({
     stake: string;
   };
 }) => {
-  const transactions = [
-    { id: 1, type: "Stake", amount: 100, date: "2024-08-21" },
-    { id: 2, type: "Unstake", amount: 50, date: "2024-08-20" },
-    { id: 3, type: "Reward", amount: 10, date: "2024-08-19" },
-    { id: 4, type: "Stake", amount: 100, date: "2024-08-21" },
-    { id: 5, type: "Unstake", amount: 50, date: "2024-08-20" },
-    { id: 6, type: "Reward", amount: 10, date: "2024-08-19" },
-    { id: 7, type: "Stake", amount: 100, date: "2024-08-21" },
-    { id: 8, type: "Unstake", amount: 50, date: "2024-08-20" },
-    { id: 9, type: "Reward", amount: 10, date: "2024-08-19" },
-    { id: 10, type: "Stake", amount: 100, date: "2024-08-21" },
-    { id: 11, type: "Unstake", amount: 50, date: "2024-08-20" },
-    { id: 12, type: "Reward", amount: 10, date: "2024-08-19" },
-    { id: 13, type: "Stake", amount: 100, date: "2024-08-21" },
-    { id: 14, type: "Unstake", amount: 50, date: "2024-08-20" },
-    { id: 15, type: "Reward", amount: 10, date: "2024-08-19" },
-    { id: 16, type: "Stake", amount: 100, date: "2024-08-21" },
-    { id: 17, type: "Unstake", amount: 50, date: "2024-08-20" },
-    { id: 18, type: "Reward", amount: 10, date: "2024-08-19" },
-  ];
-
   const { rewardTokenBal, stakingTokenBal, earned, stake } = balancesAndStakes;
 
   const parsevalue = (amount: string) => {
@@ -45,6 +28,29 @@ const TransactionHistory = ({
       ) / 10000
     );
   };
+
+  const shortenHash = (hash: string) => {
+    if (hash.length <= 10) return hash;
+
+    const start = hash.slice(0, 5);
+    const end = hash.slice(-3);
+    return `${start}...${end}`;
+  };
+
+  function formatTimestamp(timestamp: number) {
+    const date = new Date(timestamp * 1000);
+
+    const options: any = {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+    };
+
+    return date.toLocaleString(undefined, options);
+  }
 
   return (
     <div style={{ textAlign: "center" }} className="tx-table">
@@ -73,33 +79,50 @@ const TransactionHistory = ({
           Reward Token in Wallet : {parsevalue(rewardTokenBal)}
         </div>
       </div>
-      <h3>Transaction History</h3>
-      <div className="tx-table-container">
-        <table
-          style={{
-            width: "100%",
-            borderCollapse: "collapse",
-            textAlign: "center",
-          }}
-        >
-          <thead>
-            <tr>
-              <th className="border">Type</th>
-              <th className="border">Amount</th>
-              <th className="border">Date</th>
-            </tr>
-          </thead>
-          <tbody>
-            {transactions.map((txn) => (
-              <tr key={txn.id}>
-                <td className="border">{txn.type}</td>
-                <td className="border">{txn.amount} tokens</td>
-                <td className="border">{txn.date}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      {transactions.length > 0 && (
+        <Fragment>
+          <h3>My Transaction History</h3>
+          <div className="tx-table-container">
+            <table
+              style={{
+                width: "100%",
+                borderCollapse: "collapse",
+                textAlign: "center",
+              }}
+            >
+              <thead>
+                <tr>
+                  <th className="border">Type</th>
+                  <th className="border">Reward Tokens</th>
+                  <th className="border">Date</th>
+                  <th className="border">Tx Hash</th>
+                </tr>
+              </thead>
+              <tbody>
+                {transactions.map((txn: Transaction) => (
+                  <tr key={txn.transactionHash}>
+                    <td className="border">{txn.event}</td>
+                    <td className="border">
+                      {parsevalue(txn.returnValues.amount.toString())}
+                    </td>
+                    <td className="border">
+                      {formatTimestamp(Number(txn.returnValues.time))}
+                    </td>
+                    <td className="border">
+                      <a
+                        target="_blank"
+                        href={`https://sepolia.etherscan.io/tx/${txn.transactionHash}`}
+                      >
+                        {shortenHash(txn.transactionHash)}
+                      </a>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </Fragment>
+      )}
     </div>
   );
 };
