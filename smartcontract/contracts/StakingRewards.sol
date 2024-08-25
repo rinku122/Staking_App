@@ -2,8 +2,9 @@
 pragma solidity ^0.8.20;
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import {IStakingRewards} from "./interfaces/IStakingRewards.sol";
 
-contract StakingRewards is ReentrancyGuard{
+contract StakingRewards is ReentrancyGuard, IStakingRewards{
     IERC20 public immutable stakingToken;
     IERC20 public immutable rewardsToken;
 
@@ -41,6 +42,7 @@ contract StakingRewards is ReentrancyGuard{
         stakingToken.transferFrom(msg.sender, address(this), _amount);
         stakers[msg.sender].amount += _amount;
         totalSupply += _amount;
+        emit Staked(msg.sender, _amount);
     }
 
     function unstake(uint256 _amount) external nonReentrant updateReward(msg.sender){
@@ -48,6 +50,7 @@ contract StakingRewards is ReentrancyGuard{
         stakers[msg.sender].amount -= _amount;
         totalSupply -= _amount;
         stakingToken.transfer(msg.sender, _amount);
+        emit Unstaked(msg.sender, _amount);
     }
 
     function rewardPerToken() public view returns (uint256) {
@@ -75,6 +78,7 @@ contract StakingRewards is ReentrancyGuard{
             stakers[msg.sender].accumlatedReward = 0;
             rewardsToken.transfer(msg.sender, reward);
         }
+        emit RewardPaid(msg.sender, reward);
     }
 
    

@@ -13,6 +13,7 @@ const Dashboard = ({ walletAddress }: { walletAddress: string }) => {
   const contracts = useContract();
   const { web3 }: any = useWeb3();
   const [loading, setloading] = useState(false);
+  const [lastBlockNumber, setLastBlockNumber] = useState(0);
   const timerRef = useRef<any>(null);
 
   const { rewardTokenContract, stakingTokenContract, stakingRewardsContract } =
@@ -32,11 +33,27 @@ const Dashboard = ({ walletAddress }: { walletAddress: string }) => {
       return;
     getBalancesAndStakes();
     getEarnedRewards();
+    getTransaction();
+
     return () => clearInterval(timerRef.current);
   }, [contracts]);
 
+  const getTransaction = async () => {
+    try {
+      const events = await stakingRewardsContract.getPastEvents("allEvents", {
+        fromBlock: "6563956",
+        toBlock: "latest",
+      });
+
+      console.log(events);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   const getBalancesAndStakes = async () => {
     try {
+      setloading(true);
       const [_rewardTokenBal, _stakingTokenBal, _stake, _earned] =
         await Promise.all([
           rewardTokenContract.methods.balanceOf(walletAddress).call(),
@@ -52,8 +69,10 @@ const Dashboard = ({ walletAddress }: { walletAddress: string }) => {
         stake: _stake.toString(),
         earned: _earned.toString(),
       });
+      setloading(false);
     } catch (error) {
       console.log(error);
+      setloading(true);
     }
   };
 
@@ -128,11 +147,12 @@ const Dashboard = ({ walletAddress }: { walletAddress: string }) => {
         amount
       ).estimateGas({ from: walletAddress });
 
-      await stakingRewardsContract.methods[method](amount).send({
+       await stakingRewardsContract.methods[method](amount).send({
         from: walletAddress,
         gasPrice,
         gas,
       });
+
 
       const [newBalance, stakingBalance] = await Promise.all([
         stakingRewardsContract.methods.balanceOf(walletAddress).call(),

@@ -17,6 +17,21 @@ const TransactionHistory = ({
     { id: 1, type: "Stake", amount: 100, date: "2024-08-21" },
     { id: 2, type: "Unstake", amount: 50, date: "2024-08-20" },
     { id: 3, type: "Reward", amount: 10, date: "2024-08-19" },
+    { id: 4, type: "Stake", amount: 100, date: "2024-08-21" },
+    { id: 5, type: "Unstake", amount: 50, date: "2024-08-20" },
+    { id: 6, type: "Reward", amount: 10, date: "2024-08-19" },
+    { id: 7, type: "Stake", amount: 100, date: "2024-08-21" },
+    { id: 8, type: "Unstake", amount: 50, date: "2024-08-20" },
+    { id: 9, type: "Reward", amount: 10, date: "2024-08-19" },
+    { id: 10, type: "Stake", amount: 100, date: "2024-08-21" },
+    { id: 11, type: "Unstake", amount: 50, date: "2024-08-20" },
+    { id: 12, type: "Reward", amount: 10, date: "2024-08-19" },
+    { id: 13, type: "Stake", amount: 100, date: "2024-08-21" },
+    { id: 14, type: "Unstake", amount: 50, date: "2024-08-20" },
+    { id: 15, type: "Reward", amount: 10, date: "2024-08-19" },
+    { id: 16, type: "Stake", amount: 100, date: "2024-08-21" },
+    { id: 17, type: "Unstake", amount: 50, date: "2024-08-20" },
+    { id: 18, type: "Reward", amount: 10, date: "2024-08-19" },
   ];
 
   const { rewardTokenBal, stakingTokenBal, earned, stake } = balancesAndStakes;
@@ -59,30 +74,32 @@ const TransactionHistory = ({
         </div>
       </div>
       <h3>Transaction History</h3>
-      <table
-        style={{
-          width: "100%",
-          borderCollapse: "collapse",
-          textAlign: "center",
-        }}
-      >
-        <thead>
-          <tr>
-            <th className="border">Type</th>
-            <th className="border">Amount</th>
-            <th className="border">Date</th>
-          </tr>
-        </thead>
-        <tbody>
-          {transactions.map((txn) => (
-            <tr key={txn.id}>
-              <td className="border">{txn.type}</td>
-              <td className="border">{txn.amount} tokens</td>
-              <td className="border">{txn.date}</td>
+      <div className="tx-table-container">
+        <table
+          style={{
+            width: "100%",
+            borderCollapse: "collapse",
+            textAlign: "center",
+          }}
+        >
+          <thead>
+            <tr>
+              <th className="border">Type</th>
+              <th className="border">Amount</th>
+              <th className="border">Date</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {transactions.map((txn) => (
+              <tr key={txn.id}>
+                <td className="border">{txn.type}</td>
+                <td className="border">{txn.amount} tokens</td>
+                <td className="border">{txn.date}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 };

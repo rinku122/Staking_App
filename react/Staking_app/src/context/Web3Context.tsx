@@ -19,7 +19,7 @@ export const Web3Provider = ({ children }: { children: React.ReactNode }) => {
   const initializeWeb3 = async () => {
     const { ethereum }: any = window;
 
-    const _web3 = new Web3(ethereum);
+    const _web3 = new Web3('http://127.0.0.1:8545');
 
     setWeb3(_web3);
   };

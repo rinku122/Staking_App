@@ -88,3 +88,14 @@
   z-index: 1000;
   opacity: 0.3;
 }
+
+.tx-table-container {
+  max-height: 350px; /* Adjust as needed */
+  overflow-y: auto;
+}
+
+.tx-table-container table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: center;
+}

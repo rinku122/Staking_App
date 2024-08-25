@@ -12,11 +12,11 @@ const config: HardhatUserConfig = {
   networks: {
     hardhat: {},
     localhost: {
-      url: "http://127.0.0.1:8545", 
+      url: "http://127.0.0.1:8545",
     },
     // sepolia: {
-    //   url: `https://sepolia.infura.io/v3/${process.env.INFURA_SEPOLIA}`, 
-    //   accounts: [process.env.PVT_KEY!], 
+    //   url: `https://sepolia.infura.io/v3/${process.env.INFURA_SEPOLIA}`,
+    //   accounts: [process.env.PVT_KEY!],
     // },
   },
 };
