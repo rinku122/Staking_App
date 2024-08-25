@@ -5,7 +5,11 @@ import TransactionHistory from "./Transaction";
 import { useWeb3 } from "../context/Web3Context";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { DECIMALS, STAKING_REWARD_CONTRACT_REWARD_ADDRESS } from "../Constants";
+import {
+  DECIMALS,
+  FROM_BLOCKNUMBER,
+  STAKING_REWARD_CONTRACT_REWARD_ADDRESS,
+} from "../Constants";
 import BigNumber from "bignumber.js";
 import { Circles } from "react-loader-spinner";
 
@@ -49,13 +53,11 @@ const Dashboard = ({ walletAddress }: { walletAddress: string }) => {
     try {
       const events = await stakingRewardsContract.getPastEvents("allEvents", {
         filter: { user: walletAddress },
-        fromBlock: "0",
+        fromBlock: FROM_BLOCKNUMBER,
         toBlock: "latest",
       });
 
       setTransactions(events);
-
-      console.log(events);
     } catch (error) {
       console.log(error);
     }
@@ -242,13 +244,7 @@ const Dashboard = ({ walletAddress }: { walletAddress: string }) => {
   };
 
   return (
-    <div
-      style={{
-        display: "flex",
-        justifyContent: "space-between",
-        margin: "30px",
-      }}
-    >
+    <div className="dashboard">
       {loading && (
         <div className="loader-overlay">
           <Circles

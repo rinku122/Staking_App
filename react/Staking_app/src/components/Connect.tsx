@@ -19,6 +19,7 @@ const Connect: React.FC<ConnectProps> = ({
 
   const connectWallet = async () => {
     try {
+      toast.dismiss();
       const { ethereum }: any = window;
       if (typeof ethereum !== "undefined") {
         const accounts = await ethereum.request({
@@ -28,7 +29,7 @@ const Connect: React.FC<ConnectProps> = ({
         setWalletAddress(_walletAddress);
         localStorage.setItem("walletAddress", _walletAddress);
       } else {
-        toast.dark("Please Install Metamask !");
+        toast.dark("Please Install Metamask to access the App !");
       }
       initializeWeb3();
     } catch (err) {

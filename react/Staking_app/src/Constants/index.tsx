@@ -5,3 +5,5 @@ export const REWARD_CONTRACT_ADDRESS =
 export const STAKING_REWARD_CONTRACT_REWARD_ADDRESS =
   "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0";
 export const DECIMALS = 18;
+export const FROM_BLOCKNUMBER = 0;
+export const SEPLOIA_EXPLORER = "https://sepolia.etherscan.io/tx/";

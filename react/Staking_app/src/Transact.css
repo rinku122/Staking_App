@@ -99,3 +99,16 @@
   border-collapse: collapse;
   text-align: center;
 }
+
+.dashboard {
+  display: flex;
+  justify-content: space-between;
+  margin: 30px;
+}
+
+@media (max-width: 1000px) {
+  .dashboard {
+    display: block;
+    margin: 30px;
+  }
+}

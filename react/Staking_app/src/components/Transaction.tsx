@@ -1,5 +1,5 @@
 import BigNumber from "bignumber.js";
-import { DECIMALS } from "../Constants";
+import { DECIMALS, SEPLOIA_EXPLORER } from "../Constants";
 import { Transaction } from "./Dashboard";
 import { Fragment } from "react/jsx-runtime";
 
@@ -101,7 +101,11 @@ const TransactionHistory = ({
               <tbody>
                 {transactions.map((txn: Transaction) => (
                   <tr key={txn.transactionHash}>
-                    <td className="border">{txn.event}</td>
+                    <td className="border">
+                      {txn.event === "RewardPaid"
+                        ? "Rewards Withdrawn"
+                        : txn.event}
+                    </td>
                     <td className="border">
                       {parsevalue(txn.returnValues.amount.toString())}
                     </td>
@@ -111,7 +115,7 @@ const TransactionHistory = ({
                     <td className="border">
                       <a
                         target="_blank"
-                        href={`https://sepolia.etherscan.io/tx/${txn.transactionHash}`}
+                        href={`${SEPLOIA_EXPLORER}${txn.transactionHash}`}
                       >
                         {shortenHash(txn.transactionHash)}
                       </a>
