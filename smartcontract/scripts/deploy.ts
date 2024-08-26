@@ -6,6 +6,7 @@ async function main() {
 
   const [owner] = await hre.ethers.getSigners();
 
+  //Deploying Tokens
   const RewardToken = await hre.ethers.getContractFactory("RewardToken");
   const rewardToken = await RewardToken.deploy(owner.address);
 
@@ -20,6 +21,7 @@ async function main() {
     parseUnits("1") //1 token/sec
   );
 
+  //Minting Reward token to Staking Reward Fucntion
   await rewardToken.mint(
     stakingRewards.getAddress(),
     parseUnits((ONE_DAY * 10).toString())

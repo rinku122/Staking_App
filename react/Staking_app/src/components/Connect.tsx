@@ -4,6 +4,8 @@ import { toast } from "react-toastify";
 const Connect = () => {
   const { setWalletAddress, initializeWeb3 } = useWeb3();
 
+
+  //Connect to metamsk
   const connectWallet = async () => {
     try {
       toast.dismiss();

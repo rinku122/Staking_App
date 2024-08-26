@@ -8,16 +8,19 @@ contract StakingRewards is  IStakingRewards{
     IERC20 public immutable stakingToken;
     IERC20 public immutable rewardsToken;
 
+    /**
+    * Stakers Info
+    */
     struct Staker {
         uint256 amount; 
         uint256 rewardDebt; 
         uint256 toPay; 
     }
     
-    mapping(address => Staker) public staker;
-    uint256 public rewardTokenPerShare;
-    uint256 public lastTimeStamp;
-    uint256 public rewardRate;
+    mapping(address => Staker) public staker;              // Mapping for Staker Info     
+    uint256 public rewardTokenPerShare;                    // Reward Tokens/Staking Token 
+    uint256 public lastTimeStamp;                          // LastTime for stake/unstake/redeemRewards
+    uint256 public rewardRate;                             //Reward Rate (Tokens/sec)
 
 
     constructor(IERC20 _stakingToken, IERC20 _rewardsToken, uint256 _rewardRate){
@@ -26,6 +29,13 @@ contract StakingRewards is  IStakingRewards{
         rewardsToken = _rewardsToken;
     }
 
+     /**
+     * @dev This function allows a user to stake their tokens. It calculates the pending rewards and updates the reward debt accordingly. 
+     * The function checks if there are any pending rewards by calculating ((user.amount * (rewardTokenPerShare)) / 1e18) - (user.rewardDebt). 
+     * If there are, it increases user's toPay by that amount. It then updates the staker's amount and reward debt. 
+     * The function reverts if _amount is zero.
+     * @param _amount Amount of tokens to stake.
+     */
 
     function stake(uint256 _amount) external {
         require(_amount > 0, "Cant stake zero");
@@ -44,6 +54,14 @@ contract StakingRewards is  IStakingRewards{
         user.rewardDebt = user.amount * rewardTokenPerShare /1e18;
         emit Staked(msg.sender, _amount, block.timestamp);
     }
+
+     /**
+     * @dev This function allows a user to unstake their tokens. 
+     * It first calculates any pending rewards by calculating ((user.amount * (rewardTokenPerShare)) / 1e18) - (user.rewardDebt). 
+     * If there are, it transfers them to the user's address and updates user's toPay accordingly. 
+     * It then updates staker's amount and reward debt. The function reverts if _amount is greater than the staker's current balance.
+     * @param _amount Amount of tokens to unstake.
+     */
 
     function unstake(uint256 _amount) external {
         updateRewardPool();
@@ -64,6 +82,12 @@ contract StakingRewards is  IStakingRewards{
         emit Unstaked(msg.sender, _amount, block.timestamp);
     }
 
+    /**
+     * @dev This function allows a user to claim their pending rewards. 
+     * It first calculates any pending rewards by calculating ((user.amount * (rewardTokenPerShare)) / 1e18) - (user.rewardDebt). 
+     * If there are, it transfers them to the user's address and updates user's toPay to zero.
+     */
+
     function redeemRewards() external {
         updateRewardPool();
         Staker storage user = staker[msg.sender];
@@ -76,6 +100,12 @@ contract StakingRewards is  IStakingRewards{
         
     }
 
+    /**
+     * @dev This view function returns the amount of rewards a staker has earned based on their current balance and reward debt. 
+     * It also updates the reward token per share if necessary. The updated reward token per share is returned along with the earned rewards.
+     * @param _user Address of the staker.
+     * @return Amount of rewards earned by the user.
+     */
 
     function earned( address _user) public  view returns (uint256) {
         Staker storage user = staker[_user];
@@ -88,6 +118,11 @@ contract StakingRewards is  IStakingRewards{
         return (((user.amount * _rewardTokenPerShare)/ 1e18) - (user.rewardDebt) + user.toPay);
     }
 
+
+    /**
+     * @dev This internal function updates the reward pool by calculating new rewards and updating the reward token per share. 
+     * It does not return anything as it should only be called internally.
+     */
 
     function updateRewardPool () internal  {
         if (block.timestamp <= lastTimeStamp) {
@@ -102,6 +137,12 @@ contract StakingRewards is  IStakingRewards{
         rewardTokenPerShare = rewardTokenPerShare  + (rewardToken/totalSupply);
         lastTimeStamp = block.timestamp;
     }
+
+    /**
+     * @dev This view function returns the current balance of a staker. 
+     * @param account Address of the staker.
+     * @return Amount of tokens staked by the user.
+     */
 
     function balanceOf(address account) external view returns (uint256) {
         return staker[account].amount;

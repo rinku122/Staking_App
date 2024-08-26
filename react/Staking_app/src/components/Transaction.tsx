@@ -21,6 +21,8 @@ const TransactionHistory = ({
 }) => {
   const { rewardTokenBal, stakingTokenBal, earned, stake } = balancesAndStakes;
 
+
+  //Fucntion for removing Decimals
   const parsevalue = (amount: string) => {
     return (
       Math.floor(
@@ -31,6 +33,7 @@ const TransactionHistory = ({
     );
   };
 
+  //Compressing Tx-Hash
   const shortenHash = (hash: string) => {
     if (hash.length <= 10) return hash;
 
@@ -39,6 +42,8 @@ const TransactionHistory = ({
     return `${start}...${end}`;
   };
 
+
+  //Formating  timestamp to Redable format
   function formatTimestamp(timestamp: number) {
     const date = new Date(timestamp * 1000);
 

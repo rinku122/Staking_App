@@ -8,6 +8,8 @@ import { useEffect } from "react";
 function App() {
   const { setWalletAddress, walletAddress, initializeWeb3 } = useWeb3();
 
+
+  //Setting wallet address, if it is in localstorage
   useEffect(() => {
     const address = localStorage.getItem("walletAddress");
     if (!address) return;
@@ -15,6 +17,7 @@ function App() {
     initializeWeb3();
   }, []);
 
+  //Disconnect wallet
   const disconnect = () => {
     setWalletAddress(null);
     localStorage.removeItem("walletAddress");

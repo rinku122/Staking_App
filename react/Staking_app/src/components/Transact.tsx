@@ -34,7 +34,19 @@ const Transact = ({
     unStakeAmount: "",
   });
 
-  const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const { stakeAmount, unStakeAmount } = formValues;
+  const { stakingTokenBal, stake, earned } = balancesAndStakes;
+
+  //Common fucntion for disable/enable button
+  const allowed = (desiredAmount: string, maxAmount: string): boolean => {
+    if (!desiredAmount) return true;
+    return new BigNumber(desiredAmount)
+      .multipliedBy(new BigNumber(10 ** DECIMALS))
+      .isGreaterThan(new BigNumber(maxAmount));
+  };
+
+   //Settingthe state
+   const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     if (/^\d*\.?\d*$/.test(value)) {
       setFormValue({
@@ -42,16 +54,6 @@ const Transact = ({
         [name]: value,
       });
     }
-  };
-
-  const { stakeAmount, unStakeAmount } = formValues;
-  const { stakingTokenBal, stake, earned } = balancesAndStakes;
-
-  const allowed = (desiredAmount: string, maxAmount: string): boolean => {
-    if (!desiredAmount) return true;
-    return new BigNumber(desiredAmount)
-      .multipliedBy(new BigNumber(10 ** DECIMALS))
-      .isGreaterThan(new BigNumber(maxAmount));
   };
 
   return (

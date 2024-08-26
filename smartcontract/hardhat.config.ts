@@ -18,8 +18,10 @@ const config: HardhatUserConfig = {
       url: "http://127.0.0.1:8545",
     },
     sepolia: {
-      url: `https://sepolia.infura.io/v3/${process.env.INFURA_SEPOLIA}`,
-      accounts: [process.env.PVT_KEY!],
+      //Infura key
+      url: `https://sepolia.infura.io/v3/${process.env.INFURA_SEPOLIA}`, 
+      //Private Key
+      accounts: [process.env.PVT_KEY!],                                 
     },
   },
 };

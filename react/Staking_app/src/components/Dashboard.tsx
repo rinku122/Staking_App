@@ -36,11 +36,14 @@ const Dashboard = () => {
     rewardTokenBal: "0",
   });
 
+  //Get ETH balance
   useEffect(() => {
     if (walletAddress) getETHBalance();
   }, [walletAddress, web3]);
 
   const [transactions, setTransactions] = useState<Transaction[]>([]);
+
+  //Get all tokens balances
   useEffect(() => {
     if (
       !(
@@ -59,6 +62,8 @@ const Dashboard = () => {
     return () => clearInterval(timerRef.current);
   }, [contracts, walletAddress, web3]);
 
+  //Function for ETH balance
+
   const getETHBalance = async () => {
     try {
       if (!web3) return;
@@ -67,8 +72,10 @@ const Dashboard = () => {
     } catch (error) {
       console.log(error);
     }
-  };
+  };  
 
+
+  //Get Transaction History
   const getTransaction = async () => {
     try {
       const events = await stakingRewardsContract.getPastEvents("allEvents", {
@@ -83,7 +90,8 @@ const Dashboard = () => {
     }
   };
 
-  const getBalancesAndStakes = async () => {
+  //Fucntion for  all tokens balances
+  const  getBalancesAndStakes = async () => {
     try {
       setloading(true);
       const [_rewardTokenBal, _stakingTokenBal, _stake, _earned] =
@@ -108,6 +116,7 @@ const Dashboard = () => {
     }
   };
 
+  //Get dummy for staking Tokens for staking 
   const getSomeStakingTokens = async () => {
     try {
       setloading(true);
@@ -139,6 +148,7 @@ const Dashboard = () => {
     }
   };
 
+  //Get Earned reward upto a current point
   const getEarnedRewards = async () => {
     try {
       timerRef.current = setInterval(async () => {
@@ -156,6 +166,7 @@ const Dashboard = () => {
     }
   };
 
+  //Common fucntion for Staking/Unstaking 
   const handleTokens = async (amount: any, action: "stake" | "unstake") => {
     try {
       toast.dismiss();
@@ -213,6 +224,7 @@ const Dashboard = () => {
     }
   };
 
+  //Withdraw Rewards
   const redeemRewards = async () => {
     try {
       toast.dismiss();
@@ -260,6 +272,7 @@ const Dashboard = () => {
     }
   };
 
+  //Get approval or infinite allowance, to save some gas
   const getInfinitAllowance = async () => {
     try {
       const maxAllowance =

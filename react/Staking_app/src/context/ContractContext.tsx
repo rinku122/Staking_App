@@ -8,7 +8,8 @@ import {
   STAKING__CONTRACT_ADDRESS,
 } from "../Constants";
 
-// Define the type for the user context.
+// Define the type for the Contract context.
+//This will return the instances of all contract that will get used
 type ContractContextType = {
   rewardTokenContract: any | null;
   stakingTokenContract: any | null;

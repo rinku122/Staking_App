@@ -3,6 +3,9 @@ import { toast } from "react-toastify";
 import Web3 from "web3";
 import { NETWORK_CHAIN_ID } from "../Constants";
 
+
+// Define the type for the Web3 context.
+//This will return the web3 instance .
 type Web3ContextType = {
   web3: Web3 | null;
   initializeWeb3: () => void;
@@ -24,8 +27,12 @@ export const Web3Provider = ({ children }: { children: React.ReactNode }) => {
   const [web3, setWeb3] = useState<Web3 | null>(null);
   const [walletAddress, setWalletAddress] = useState<string | null>(null);
 
+  //Checks for wallet and nwtwork. Checks if holesky is there or not. If not , it adds it to metamask
+
   const initializeWeb3 = async () => {
     const _web3 = new Web3(ethereum);
+
+    
 
     if (typeof ethereum !== "undefined") {
       const currentChainId = (await _web3.eth.getChainId()).toString();
@@ -75,9 +82,12 @@ export const Web3Provider = ({ children }: { children: React.ReactNode }) => {
   // Effect to initialize Web3 when the component mounts
   useEffect(() => {
     initializeWeb3();
+
+    //Listners for Network change in Metamsk
     ethereum?.on("chainChanged", () => {
       window.location.reload();
     });
+    //Listners for Network change in Account Change
 
     ethereum?.on("accountsChanged", (accounts: string[]) => {
       let _walletAddress = accounts[0];
