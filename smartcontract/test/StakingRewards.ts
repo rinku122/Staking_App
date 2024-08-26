@@ -24,17 +24,13 @@ describe("Deploy Tokens", function () {
 
     const stakingRewards = await StakingRewards.deploy(
       stakingToken.getAddress(),
-      rewardToken.getAddress()
+      rewardToken.getAddress(),
+      parseUnits("1") //1 token/sec
     );
 
     await rewardToken.mint(
       stakingRewards.getAddress(),
       parseUnits((ONE_DAY * 10).toString())
-    );
-
-    await stakingRewards.addRewardToken(
-      parseUnits((ONE_DAY * 10).toString()),
-      ONE_DAY * 10
     );
 
     await stakingToken.connect(user1).mint(user1.address, parseUnits("50000"));
@@ -52,101 +48,154 @@ describe("Deploy Tokens", function () {
     return { stakingRewards, rewardToken, stakingToken };
   }
 
-  describe("Rewards Staking", function () {
+  describe("Staking Rewards", function () {
     it("Stake", async function () {
-      const [owner, user1, user2] = await hre.ethers.getSigners();
+      const [_, user1, user2] = await hre.ethers.getSigners();
 
       const { rewardToken, stakingRewards, stakingToken } = await loadFixture(
         getContracts
       );
-
       await stakingRewards.connect(user1).stake(parseUnits("100"));
-
-      await time.increase(ONE_DAY);
-
-      await stakingRewards.connect(user1).stake(parseUnits("100"));
-
-      await time.increase(ONE_DAY);
-
-      await stakingRewards.connect(user2).stake(parseUnits("100"));
-
-      await time.increase(ONE_DAY);
-
-      let user1_reward = await stakingRewards.earned(user1.address);
-      let user2_reward = await stakingRewards.earned(user2.address);
-
-      expect(user1_reward.toString()).to.be.equals("230402000000000000000000");
-      expect(user2_reward.toString()).to.be.equals("28800000000000000000000");
-
-      await stakingRewards.connect(user1).stake(parseUnits("100"));
-
-      await time.increase(ONE_DAY);
-
-      user1_reward = await stakingRewards.earned(user1.address);
-      user2_reward = await stakingRewards.earned(user2.address);
-
-      expect(user1_reward.toString()).to.be.equals("295202666666666666666600");
-      expect(user2_reward.toString()).to.be.equals("50400333333333333333300");
-    });
-
-    it("Get Rewards", async function () {
-      const [owner, user1, user2] = await hre.ethers.getSigners();
-
-      const { rewardToken, stakingRewards, stakingToken } = await loadFixture(
-        getContracts
+      expect(await stakingRewards.balanceOf(user1.address)).equals(
+        parseUnits("100")
       );
-
-      await stakingRewards.connect(user1).stake(parseUnits("100"));
-
-      await time.increase(ONE_DAY);
-
-      const user1_Reward = await stakingRewards.earned(user1.address);
-
-      expect(user1_Reward.toString()).to.be.equal("86400000000000000000000");
-
-      expect(await rewardToken.balanceOf(user1.address)).to.be.equals(0);
-
-      await stakingRewards.connect(user1).getReward();
-
-      expect(await rewardToken.balanceOf(user1.address)).to.be.equals(
-        "86401000000000000000000"
+      await stakingRewards.connect(user1).stake(parseUnits("200"));
+      expect(await stakingRewards.balanceOf(user1.address)).equals(
+        parseUnits("300")
       );
     });
 
     it("Unstake", async function () {
-      const [owner, user1, user2] = await hre.ethers.getSigners();
+      const [_, user1, user2] = await hre.ethers.getSigners();
 
       const { rewardToken, stakingRewards, stakingToken } = await loadFixture(
         getContracts
       );
+      await stakingRewards.connect(user1).stake(parseUnits("500"));
+      expect(await stakingRewards.balanceOf(user1.address)).equals(
+        parseUnits("500")
+      );
+      await stakingRewards.connect(user1).unstake(parseUnits("200"));
+      expect(await stakingRewards.balanceOf(user1.address)).equals(
+        parseUnits("300")
+      );
+
+      await stakingRewards.connect(user1).unstake(parseUnits("200"));
+      expect(await stakingRewards.balanceOf(user1.address)).equals(
+        parseUnits("100")
+      );
+
+      await stakingRewards.connect(user1).unstake(parseUnits("100"));
+      expect(await stakingRewards.balanceOf(user1.address)).equals(
+        parseUnits("0")
+      );
+    });
+
+    it("Reward Distribution", async function () {
+      const [_, user1, user2] = await hre.ethers.getSigners();
+
+      const { rewardToken, stakingRewards, stakingToken } = await loadFixture(
+        getContracts
+      );
+      await stakingRewards.connect(user1).stake(parseUnits("100"));
+      await time.increase(1);
 
       await stakingRewards.connect(user1).stake(parseUnits("100"));
-
-      await time.increase(ONE_DAY);
+      await time.increase(1);
 
       await stakingRewards.connect(user1).stake(parseUnits("100"));
+      await time.increase(1);
 
-      await time.increase(ONE_DAY);
+      await stakingRewards.connect(user1).stake(parseUnits("100"));
+      await time.increase(1);
+
+      await stakingRewards.connect(user1).stake(parseUnits("100"));
+      await time.increase(1);
+
+      await stakingRewards.connect(user1).stake(parseUnits("100"));
+      await time.increase(1);
+
+      await stakingRewards.connect(user1).redeemRewards();
+
+      expect(await rewardToken.balanceOf(user1.address)).equals(
+        5999999999999999500n
+      ); //Approx 6 days withdrwal getting 6 tokens
+
+      await time.increase(3);
+
+      await stakingRewards.connect(user1).redeemRewards();
+      expect(await rewardToken.balanceOf(user1.address)).equals(
+        8999999999999999500n
+      ); //On 9th day getting 3 tokens again
+
+      await stakingRewards.connect(user1).stake(parseUnits("100"));
+      expect(await stakingRewards.earned(user1.address)).equal(0n);
+      await time.increase(2);
+
+      expect(await stakingRewards.earned(user1.address)).equal(
+        1999999999999999900n
+      );
+
+      await stakingRewards.connect(user1).redeemRewards();
+
+      expect(await rewardToken.balanceOf(user1.address)).equals(
+        10999999999999999400n
+      ); //On 11tokens balance of user1
 
       await stakingRewards.connect(user2).stake(parseUnits("100"));
 
-      await time.increase(ONE_DAY);
+      await time.increase(1);
 
-      let user1_reward = await stakingRewards.earned(user1.address);
-      let user2_reward = await stakingRewards.earned(user2.address);
+      // User1 has now 700 stake and user2 has 100
 
-      expect(user1_reward.toString()).to.be.equals("230402000000000000000000");
-      expect(user2_reward.toString()).to.be.equals("28800000000000000000000");
+      expect(await stakingRewards.earned(user1.address)).equals(
+        875000000000000000n
+      );
+      expect(await stakingRewards.earned(user2.address)).equals(
+        125000000000000000n
+      );
 
-      await stakingRewards.connect(user1).unstake(parseUnits("150"));
+      await stakingRewards.connect(user1).redeemRewards();
+      await stakingRewards.connect(user2).redeemRewards();
 
-      await time.increase(ONE_DAY);
+      expect(await rewardToken.balanceOf(user1.address)).equals(
+        11874999999999999400n
+      );
+      expect(await rewardToken.balanceOf(user2.address)).equals(
+        125000000000000000n
+      );
 
-      user1_reward = await stakingRewards.earned(user1.address);
-      user2_reward = await stakingRewards.earned(user2.address);
+      await stakingRewards.connect(user1).unstake(parseUnits("600"));
+      await stakingRewards.connect(user2).stake(parseUnits("600"));
+      await time.increase(1);
 
-      expect(user1_reward.toString()).to.be.equals("259202666666666666666600");
-      expect(user2_reward.toString()).to.be.equals("86400333333333333333300");
+      // //Reverse the case , user has now 100 stake and user2 has 700
+
+      expect(await stakingRewards.earned(user1.address)).equals(
+        125000000000000000n
+      );
+
+      expect(await stakingRewards.earned(user2.address)).equals(
+        875000000000000000n
+      );
+
+      await stakingRewards.connect(user1).redeemRewards();
+      await stakingRewards.connect(user2).redeemRewards();
+
+      await stakingRewards.connect(user1).stake(parseUnits("300"));
+      await stakingRewards.connect(user2).unstake(parseUnits("300"));
+
+      await time.increase(1);
+
+      //Now both users have same stake so they should get same amount of reward
+
+      expect(await stakingRewards.earned(user1.address)).equals(
+        500000000000000000n
+      );
+
+      expect(await stakingRewards.earned(user2.address)).equals(
+        500000000000000000n
+      );
     });
   });
 });

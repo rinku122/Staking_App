@@ -10,7 +10,10 @@ const config: HardhatUserConfig = {
     ],
   },
   networks: {
-    hardhat: {},
+    hardhat: {
+      //We will increase the time manually.
+      allowBlocksWithSameTimestamp: true,
+    },
     localhost: {
       url: "http://127.0.0.1:8545",
     },

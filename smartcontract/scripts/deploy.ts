@@ -16,7 +16,13 @@ async function main() {
 
   const stakingRewards = await StakingRewards.deploy(
     stakingToken.getAddress(),
-    rewardToken.getAddress()
+    rewardToken.getAddress(),
+    parseUnits("1") //1 token/sec
+  );
+
+  await rewardToken.mint(
+    stakingRewards.getAddress(),
+    parseUnits((ONE_DAY * 10).toString())
   );
 
   console.log({
@@ -24,16 +30,6 @@ async function main() {
     stakingContract: await stakingToken.getAddress(),
     stakingRewards: await stakingRewards.getAddress(),
   });
-
-  await rewardToken.mint(
-    stakingRewards.getAddress(),
-    parseUnits((ONE_DAY * 10).toString())
-  );
-
-  await stakingRewards.addRewardToken(
-    parseUnits((ONE_DAY * 10).toString()),
-    ONE_DAY * 10
-  );
 }
 
 main().catch((error) => {
