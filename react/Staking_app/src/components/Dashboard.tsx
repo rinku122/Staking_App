@@ -177,27 +177,33 @@ const Dashboard = ({ walletAddress }: { walletAddress: string }) => {
         stake: newBalance.toString(),
         stakingTokenBal: stakingBalance.toString(),
       });
-
       setloading(false);
       toast.success(`Token ${action === "stake" ? "Staked" : "Unstaked"}...`);
     } catch (error: any) {
       console.log(error);
+      if (error.message.includes("Transaction has been reverted by the EVM")) {
+        toast.error("Something went wrong, Please try again");
+        setloading(false);
+        return;
+      }
       toast.error(error.message);
       setloading(false);
     }
   };
 
-  const getRewards = async () => {
+  const redeemRewards = async () => {
     try {
       toast.dismiss();
       setloading(true);
       let gasPrice: any = await web3.eth.getGasPrice();
       gasPrice = Math.trunc((Number(gasPrice) * 150) / 100).toString();
-      const gas = await stakingRewardsContract.methods.getReward().estimateGas({
-        from: walletAddress,
-      });
+      const gas = await stakingRewardsContract.methods
+        .redeemRewards()
+        .estimateGas({
+          from: walletAddress,
+        });
 
-      await stakingRewardsContract.methods.getReward().send({
+      await stakingRewardsContract.methods.redeemRewards().send({
         from: walletAddress,
         gasPrice,
         gas,
@@ -220,6 +226,11 @@ const Dashboard = ({ walletAddress }: { walletAddress: string }) => {
       toast.success(`Rewards Redeemed Successfully...`);
     } catch (error: any) {
       console.log(error);
+      if (error.message.includes("Transaction has been reverted by the EVM")) {
+        toast.error("Something went wrong, Please try again");
+        setloading(false);
+        return;
+      }
       toast.error(error.message);
       setloading(false);
     }
@@ -261,7 +272,7 @@ const Dashboard = ({ walletAddress }: { walletAddress: string }) => {
         balancesAndStakes={balancesAndStakes}
         getSomeStakingTokens={getSomeStakingTokens}
         handleTokens={handleTokens}
-        getRewards={getRewards}
+        getRewards={redeemRewards}
       />
       <TransactionHistory
         transactions={transactions}

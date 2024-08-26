@@ -68,18 +68,13 @@ contract StakingRewards is  IStakingRewards{
         updateRewardPool();
         Staker storage user = staker[msg.sender];
         uint256 rewardsAccumulated = earned(msg.sender);
-        if(rewardsAccumulated > 0){
-            user.rewardDebt = user.amount * rewardTokenPerShare /1e18;
-            user.toPay = 0;
-            rewardsToken.transfer(msg.sender, rewardsAccumulated);
-        }
+        if(rewardsAccumulated <= 0) return;
+        user.rewardDebt = user.amount * rewardTokenPerShare /1e18;
+        user.toPay = 0;
+        rewardsToken.transfer(msg.sender, rewardsAccumulated);
+        emit RewardPaid(msg.sender, rewardsAccumulated, block.timestamp);
+        
     }
-
-
-    function balanceOf(address account) external view returns (uint256) {
-        return staker[account].amount;
-    }
-
 
 
     function earned( address _user) public  view returns (uint256) {
@@ -91,10 +86,6 @@ contract StakingRewards is  IStakingRewards{
             _rewardTokenPerShare = rewardTokenPerShare  + (rewardToken / totalSupply);
         }
         return (((user.amount * _rewardTokenPerShare)/ 1e18) - (user.rewardDebt) + user.toPay);
-    }
-
-    function timestapm ()public view returns (uint256){
-        return block.timestamp;
     }
 
 
@@ -110,5 +101,9 @@ contract StakingRewards is  IStakingRewards{
         uint rewardToken = rewardRate * (block.timestamp - lastTimeStamp) * 1e18;
         rewardTokenPerShare = rewardTokenPerShare  + (rewardToken/totalSupply);
         lastTimeStamp = block.timestamp;
+    }
+
+    function balanceOf(address account) external view returns (uint256) {
+        return staker[account].amount;
     }
 }
