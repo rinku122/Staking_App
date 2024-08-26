@@ -24,6 +24,17 @@
   transition: background-color 0.3s ease;
 }
 
+.footer {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  padding: 10px 20px;
+  background-color: #45a049;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
 .styled-card {
   padding: 10px;
   background-color: #213547;

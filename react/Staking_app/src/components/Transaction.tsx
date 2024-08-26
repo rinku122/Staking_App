@@ -7,6 +7,7 @@ const TransactionHistory = ({
   walletAddress,
   balancesAndStakes,
   transactions,
+  ethbalance,
 }: {
   walletAddress: string;
   transactions: Transaction[];
@@ -16,6 +17,7 @@ const TransactionHistory = ({
     earned: string;
     stake: string;
   };
+  ethbalance: string;
 }) => {
   const { rewardTokenBal, stakingTokenBal, earned, stake } = balancesAndStakes;
 
@@ -62,7 +64,7 @@ const TransactionHistory = ({
         }}
       >
         <div style={{ width: "100%", cursor: "false" }} className="styled-card">
-          Connected Account : {walletAddress}
+          Account : {walletAddress} - {parsevalue(ethbalance)} ETH
         </div>
       </div>
       <div style={{ width: "100%" }}>

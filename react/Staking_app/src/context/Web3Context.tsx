@@ -6,11 +6,15 @@ import { NETWORK_CHAIN_ID } from "../Constants";
 type Web3ContextType = {
   web3: Web3 | null;
   initializeWeb3: () => void;
+  setWalletAddress: React.Dispatch<React.SetStateAction<string | null>>;
+  walletAddress: string | null;
 };
 
 const Web3Context = createContext<Web3ContextType>({
   web3: null,
   initializeWeb3: () => {},
+  setWalletAddress: () => {},
+  walletAddress: "",
 });
 
 export const useWeb3 = () => useContext(Web3Context);
@@ -18,6 +22,7 @@ export const useWeb3 = () => useContext(Web3Context);
 const { ethereum }: any = window;
 export const Web3Provider = ({ children }: { children: React.ReactNode }) => {
   const [web3, setWeb3] = useState<Web3 | null>(null);
+  const [walletAddress, setWalletAddress] = useState<string | null>(null);
 
   const initializeWeb3 = async () => {
     const _web3 = new Web3(ethereum);
@@ -47,10 +52,10 @@ export const Web3Provider = ({ children }: { children: React.ReactNode }) => {
                       symbol: "ETH",
                       decimals: 18,
                     },
-                    rpcUrls: ["https://ethereum-holesky-rpc.publicnode.com"], 
+                    rpcUrls: ["https://ethereum-holesky-rpc.publicnode.com"],
                     blockExplorerUrls: [
                       "https://ethereum-holesky-rpc.publicnode.com",
-                    ], 
+                    ],
                   },
                 ],
               });
@@ -74,8 +79,17 @@ export const Web3Provider = ({ children }: { children: React.ReactNode }) => {
       window.location.reload();
     });
 
+    ethereum?.on("accountsChanged", (accounts: string[]) => {
+      let _walletAddress = accounts[0];
+      if (_walletAddress) {
+        setWalletAddress(_walletAddress);
+        localStorage.setItem("walletAddress", _walletAddress);
+      }
+    });
+
     return () => {
-      ethereum?.removeListener("chainChanged", () => console.log("Called"));
+      ethereum?.removeListener("chainChanged", () => console.log("Cleared"));
+      ethereum?.removeListener("accountsChanged", () => console.log("Cleared"));
     };
   }, []);
 
@@ -84,6 +98,8 @@ export const Web3Provider = ({ children }: { children: React.ReactNode }) => {
       value={{
         web3,
         initializeWeb3,
+        setWalletAddress,
+        walletAddress,
       }}
     >
       {children}

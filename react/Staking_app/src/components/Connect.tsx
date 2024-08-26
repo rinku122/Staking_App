@@ -1,21 +1,8 @@
-import React, { useEffect } from "react";
-import { toast } from "react-toastify";
 import { useWeb3 } from "../context/Web3Context";
+import { toast } from "react-toastify";
 
-interface ConnectProps {
-  setWalletAddress: (address: string) => void;
-  walletAddress: string | null;
-}
-
-const Connect: React.FC<ConnectProps> = ({
-  setWalletAddress,
-  walletAddress,
-}) => {
-  const { initializeWeb3 } = useWeb3();
-
-  useEffect(() => {
-    if (walletAddress) initializeWeb3();
-  }, []);
+const Connect = () => {
+  const { setWalletAddress, initializeWeb3 } = useWeb3();
 
   const connectWallet = async () => {
     try {

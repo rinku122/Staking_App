@@ -19,14 +19,15 @@ export interface Transaction {
   returnValues: { amount: string; time: string };
 }
 
-const Dashboard = ({ walletAddress }: { walletAddress: string }) => {
+const Dashboard = () => {
   const contracts = useContract();
-  const { web3 }: any = useWeb3();
+  const { web3, walletAddress }: any = useWeb3();
   const [loading, setloading] = useState(false);
   const timerRef = useRef<any>(null);
 
   const { rewardTokenContract, stakingTokenContract, stakingRewardsContract } =
     contracts;
+  const [ethbalance, setEthBalance] = useState("0");
 
   const [balancesAndStakes, setbalancesAndStakes] = useState({
     stakingTokenBal: "0",
@@ -35,19 +36,38 @@ const Dashboard = ({ walletAddress }: { walletAddress: string }) => {
     rewardTokenBal: "0",
   });
 
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  useEffect(() => {
+    if (walletAddress) getETHBalance();
+  }, [walletAddress, web3]);
 
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
   useEffect(() => {
     if (
-      !(rewardTokenContract && stakingTokenContract && stakingRewardsContract)
+      !(
+        rewardTokenContract &&
+        stakingTokenContract &&
+        stakingRewardsContract &&
+        walletAddress
+      )
     )
       return;
     getBalancesAndStakes();
     getEarnedRewards();
     getTransaction();
+    getETHBalance();
 
     return () => clearInterval(timerRef.current);
-  }, [contracts]);
+  }, [contracts, walletAddress, web3]);
+
+  const getETHBalance = async () => {
+    try {
+      if (!web3) return;
+      const bal = await web3.eth.getBalance(walletAddress);
+      setEthBalance(bal.toString());
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   const getTransaction = async () => {
     try {
@@ -104,6 +124,7 @@ const Dashboard = ({ walletAddress }: { walletAddress: string }) => {
       const newBalance = await stakingTokenContract.methods
         .balanceOf(walletAddress)
         .call();
+      await getETHBalance();
       setbalancesAndStakes({
         ...balancesAndStakes,
         stakingTokenBal: newBalance.toString(),
@@ -171,6 +192,7 @@ const Dashboard = ({ walletAddress }: { walletAddress: string }) => {
         stakingRewardsContract.methods.balanceOf(walletAddress).call(),
         stakingTokenContract.methods.balanceOf(walletAddress).call(),
       ]);
+      await getETHBalance();
 
       setbalancesAndStakes({
         ...balancesAndStakes,
@@ -221,6 +243,8 @@ const Dashboard = ({ walletAddress }: { walletAddress: string }) => {
         rewardTokenBal: balance.toString(),
         earned: earned.toString(),
       });
+
+      await getETHBalance();
 
       setloading(false);
       toast.success(`Rewards Redeemed Successfully...`);
@@ -278,6 +302,7 @@ const Dashboard = ({ walletAddress }: { walletAddress: string }) => {
         transactions={transactions}
         walletAddress={walletAddress}
         balancesAndStakes={balancesAndStakes}
+        ethbalance={ethbalance}
       />
     </div>
   );

@@ -1,29 +1,37 @@
-import { useEffect, useState } from "react";
 import "./App.css";
 import Connect from "./components/Connect";
 import Dashboard from "./components/Dashboard";
 import { ToastContainer } from "react-toastify";
+import { useWeb3 } from "./context/Web3Context";
+import { useEffect } from "react";
 
 function App() {
-  const [walletAddress, setWalletAddress] = useState<string | null>("");
-  // const [walletAddress, setWalletAddress] = useState<boolean>(false);
+  const { setWalletAddress, walletAddress, initializeWeb3 } = useWeb3();
 
   useEffect(() => {
-    setWalletAddress(localStorage.getItem("walletAddress"));
+    const address = localStorage.getItem("walletAddress");
+    if (!address) return;
+    setWalletAddress(address);
+    initializeWeb3();
   }, []);
+
+  const disconnect = () => {
+    setWalletAddress(null);
+    localStorage.removeItem("walletAddress");
+  };
 
   return (
     <>
       <ToastContainer />
       {walletAddress ? (
         <div>
-          <Dashboard walletAddress={walletAddress} />
+          <Dashboard />
+          <button onClick={disconnect} className="footer">
+            Disconnect
+          </button>
         </div>
       ) : (
-        <Connect
-          setWalletAddress={setWalletAddress}
-          walletAddress={walletAddress}
-        />
+        <Connect />
       )}
     </>
   );
